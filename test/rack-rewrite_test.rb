@@ -10,6 +10,10 @@ class RackRewriteTest < Test::Unit::TestCase
     {'PATH_INFO' => '/wiki/Yair_Flicker', 'QUERY_STRING' => ''}.merge(overrides)
   end
 
+  def call_args_with_query_string(overrides={})
+    {'PATH_INFO' => '/wiki/Yair_Flicker', 'QUERY_STRING' => 'a=foo&b=bar'}.merge(overrides)
+  end
+
   def self.should_not_halt
     should "not halt the rack chain" do
       @app.expects(:call).once
@@ -124,6 +128,32 @@ class RackRewriteTest < Test::Unit::TestCase
         end
         should "set QUERY_STRING to ''" do
           assert_equal '', @initial_args['QUERY_STRING']
+        end
+      end
+    end
+
+    context 'when a rewrite rule matches but there is no REQUEST_URI set and there is a QUERY_STRING set' do
+      setup {
+        @rack = Rack::Rewrite.new(@app) do
+          rewrite %r{/wiki/Yair_Flicker(.*)}, '/john$1'
+        end
+      }
+      should_not_halt
+
+      context 'the env' do
+        setup do
+          @initial_args = call_args_with_query_string.dup
+          @rack.call(@initial_args)
+        end
+
+        should "set PATH_INFO to '/john'" do
+          assert_equal '/john', @initial_args['PATH_INFO']
+        end
+        should "set REQUEST_URI to '/john?a=foo&b=bar'" do
+          assert_equal '/john?a=foo&b=bar', @initial_args['REQUEST_URI']
+        end
+        should "set QUERY_STRING to 'a=foo&b=bar'" do
+          assert_equal 'a=foo&b=bar', @initial_args['QUERY_STRING']
         end
       end
     end
