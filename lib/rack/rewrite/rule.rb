@@ -11,18 +11,18 @@ module Rack
       protected
         # We're explicitly defining private functions for our DSL rather than
         # using method_missing
-        
+
         # Creates a rewrite rule that will simply rewrite the REQUEST_URI,
-        # PATH_INFO, and QUERY_STRING headers of the Rack environment.  The 
+        # PATH_INFO, and QUERY_STRING headers of the Rack environment.  The
         # user's browser will continue to show the initially requested URL.
-        # 
+        #
         #  rewrite '/wiki/John_Trupiano', '/john'
         #  rewrite %r{/wiki/(\w+)_\w+}, '/$1'
         #  rewrite %r{(.*)}, '/maintenance.html', :if => lambda { File.exists?('maintenance.html') }
         def rewrite(*args)
           add_rule :rewrite, *args
         end
-        
+
         # Creates a redirect rule that will send a 301 when matching.
         #
         #  r301 '/wiki/John_Trupiano', '/john'
@@ -30,7 +30,7 @@ module Rack
         def r301(*args)
           add_rule :r301, *args
         end
-        
+
         # Creates a redirect rule that will send a 302 when matching.
         #
         #  r302 '/wiki/John_Trupiano', '/john'
@@ -38,29 +38,29 @@ module Rack
         def r302(*args)
           add_rule :r302, *args
         end
-        
+
         # Creates a rule that will render a file if matched.
         #
-        #  send_file /*/, 'public/system/maintenance.html', 
+        #  send_file /*/, 'public/system/maintenance.html',
         #    :if => Proc.new { File.exists?('public/system/maintenance.html') }
         def send_file(*args)
           add_rule :send_file, *args
         end
-        
+
         # Creates a rule that will render a file using x-send-file
         # if matched.
         #
-        #  x_send_file /*/, 'public/system/maintenance.html', 
+        #  x_send_file /*/, 'public/system/maintenance.html',
         #    :if => Proc.new { File.exists?('public/system/maintenance.html') }
         def x_send_file(*args)
           add_rule :x_send_file, *args
         end
-        
+
       private
         def add_rule(method, from, to, options = {}) #:nodoc:
           @rules << Rule.new(method.to_sym, from, to, options)
         end
-        
+
     end
 
     # TODO: Break rules into subclasses
@@ -73,7 +73,7 @@ module Rack
       def matches?(rack_env) #:nodoc:
         return false if options[:if].respond_to?(:call) && !options[:if].call(rack_env)
         path = build_path_from_env(rack_env)
-        
+
         self.match_options?(rack_env) && string_matches?(path, self.from)
       end
 
@@ -113,7 +113,7 @@ module Rack
           raise Exception.new("Unsupported rule: #{self.rule_type}")
         end
       end
-      
+
       protected
         def interpret_to(env) #:nodoc:
           path = build_path_from_env(env)
@@ -121,32 +121,32 @@ module Rack
           return computed_to(path) if compute_to?(path)
           self.to
         end
-        
+
         def is_a_regexp?(obj)
           obj.is_a?(Regexp) || (Object.const_defined?(:Oniguruma) && obj.is_a?(Oniguruma::ORegexp))
         end
-        
+
         def match_options?(env, path = build_path_from_env(env))
           matches = []
           request = Rack::Request.new(env)
 
           # negative matches
           matches << !string_matches?(path, options[:not]) if options[:not]
-          
+
           # possitive matches
           matches << string_matches?(env['REQUEST_METHOD'], options[:method]) if options[:method]
           matches << string_matches?(request.host, options[:host]) if options[:host]
-          
+
           matches.all?
         end
-        
+
       private
         def normalize_options(arg)
           options = arg.respond_to?(:call) ? {:if => arg} : arg
           options.symbolize_keys! if options.respond_to? :symbolize_keys!
           options.freeze
         end
-      
+
         def interpret_to_proc(path, env)
           return self.to.call(match(path), env) if self.from.is_a?(Regexp)
           self.to.call(self.from, env)
@@ -156,10 +156,10 @@ module Rack
           self.is_a_regexp?(from) && match(path)
         end
 
-        def match(path) 
+        def match(path)
           self.from.match(path)
         end
-        
+
         def string_matches?(string, matcher)
           if self.is_a_regexp?(matcher)
             string =~ matcher
@@ -179,14 +179,14 @@ module Rack
           end
           return computed_to
         end
-        
+
         # Construct the URL (without domain) from PATH_INFO and QUERY_STRING
         def build_path_from_env(env)
           path = env['PATH_INFO']
           path += "?#{env['QUERY_STRING']}" unless env['QUERY_STRING'].nil? || env['QUERY_STRING'].empty?
           path
         end
-        
+
         def redirect_message(location)
           %Q(Redirecting to <a href="#{location}">#{location}</a>)
         end

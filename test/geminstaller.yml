@@ -5,5 +5,3 @@ gems:
   version: '= 0.9.8'
 - name: rack
   version: '= 1.1.0'
-# - name: oniguruma
-#   version: '= 1.1.0'

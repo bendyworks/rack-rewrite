@@ -44,12 +44,12 @@ Gem::Specification.new do |s|
     "test/test_helper.rb"
   ]
   #s.add_dependency 'rack'
-  
+
   s.add_development_dependency 'bundler', '~> 1.0.10'
   s.add_development_dependency 'shoulda', '~> 2.10.2'
   s.add_development_dependency 'mocha', '~> 0.9.7'
   s.add_development_dependency 'rack'
-  
+
   if s.respond_to? :specification_version then
     s.specification_version = 3
   end
