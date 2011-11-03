@@ -6,6 +6,7 @@ PATH
 GEM
   remote: http://rubygems.org/
   specs:
+    minitest (2.7.0)
     mocha (0.9.12)
     rack (1.2.1)
     shoulda (2.10.3)
@@ -15,6 +16,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.0.10)
+  minitest
   mocha (~> 0.9.7)
   rack
   rack-rewrite!
