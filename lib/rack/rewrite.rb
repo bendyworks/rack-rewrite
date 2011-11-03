@@ -1,5 +1,6 @@
 module Rack
-  autoload :RuleSet, 'rack/rewrite/rule'
+  autoload :RuleSet, 'rack/rewrite/rule_set'
+  autoload :Rule, 'rack/rewrite/rule'
   autoload :VERSION, 'rack/rewrite/version'
 
   # A rack middleware for defining and applying rewrite rules. In many cases you
