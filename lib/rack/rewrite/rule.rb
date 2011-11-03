@@ -1,8 +1,9 @@
 require 'rack/mime'
+require 'rack/rewrite/rule/permanent_redirect'
+require 'rack/rewrite/rule/temporary_redirect'
 
 module Rack
   class Rewrite
-    # TODO: Break rules into subclasses
     class Rule #:nodoc:
       attr_reader :rule_type, :from, :to, :options
       def initialize(rule_type, from, to, options={}) #:nodoc:
@@ -23,11 +24,10 @@ module Rack
         additional_headers = @options[:headers] || {}
         case self.rule_type
         when :r301
-          [301, {'Location' => interpreted_to, 'Content-Type' => Rack::Mime.mime_type(::File.extname(interpreted_to))}.merge!(additional_headers), [redirect_message(interpreted_to)]]
+          Rack::Rewrite::Rule::PermanentRedirect.new(interpreted_to, additional_headers).run
         when :r302
-          [302, {'Location' => interpreted_to, 'Content-Type' => Rack::Mime.mime_type(::File.extname(interpreted_to))}.merge!(additional_headers), [redirect_message(interpreted_to)]]
+          Rack::Rewrite::Rule::TemporaryRedirect.new(interpreted_to, additional_headers).run
         when :rewrite
-          # return [200, {}, {:content => env.inspect}]
           env['REQUEST_URI'] = interpreted_to
           if q_index = interpreted_to.index('?')
             env['PATH_INFO'] = interpreted_to[0..q_index-1]
